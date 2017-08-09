@@ -4,15 +4,17 @@ import chainer
 import chainer.functions as F
 import chainer.links as L
 
-from center_loss import center_loss_function
+from center_loss import CenterLoss
 
 
 class LeNets(chainer.Chain):
 
-    def __init__(self, out_dim, lambda_ratio=0.5):
+    def __init__(self, out_dim, alpha, lambda_ratio=0.5, is_center_loss=True):
 
         self.out_dim = out_dim
+        self.alpha = alpha
         self.lambda_ratio = lambda_ratio
+        self.is_center_loss = is_center_loss
 
         super(LeNets, self).__init__()
         with self.init_scope():
@@ -24,6 +26,9 @@ class LeNets(chainer.Chain):
             self.conv3_2 = L.Convolution2D(None, 128, ksize=5, stride=1, pad=2)
             self.fc1 = L.Linear(None, 2)
             self.fc2 = L.Linear(None, out_dim)
+
+            if is_center_loss:
+                self.center_loss_function = CenterLoss(alpha, out_dim)
 
     def extract_feature(self, x):
 
@@ -38,13 +43,21 @@ class LeNets(chainer.Chain):
     def __call__(self, x, t):
 
         h = self.extract_feature(x)
-        center_loss = center_loss_function(h, t, self.out_dim)
 
-        h = F.prelu(h)
+        if self.is_center_loss:
+            center_loss = self.center_loss_function(h, t, self.alpha, self.out_dim)
+            chainer.report({"centerloss": center_loss}, self)
+
+        h = F.relu(h)
         h = self.fc2(h)
 
         softmax_loss = F.softmax_cross_entropy(h, t)
-        loss = softmax_loss + self.lambda_ratio * center_loss
+        chainer.report({"softmaxloss": softmax_loss}, self)
+
+        if self.is_center_loss:
+            loss = softmax_loss + self.lambda_ratio * center_loss
+        else:
+            loss = softmax_loss
 
         chainer.report({"loss": loss, "accuracy": F.accuracy(h, t)}, self)
         return loss
