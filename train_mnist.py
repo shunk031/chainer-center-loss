@@ -9,15 +9,18 @@ from chainer.training import extensions
 
 from model import LeNets
 from util.logger import setup_logger
+from util.extensions import VisualizeDeepFeature
 
 
 def main():
 
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
-    parser.add_argument('--batchsize', '-b', type=int, default=100,
+    parser.add_argument('--batchsize', '-b', type=int, default=32,
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=20,
                         help='Number of sweeps over the dataset to train')
+    parser.add_argument('--centerloss', '-c', action='store_true',
+                        default=False, help='Use center loss')
     parser.add_argument('--frequency', '-f', type=int, default=-1,
                         help='Frequency of taking a snapshot')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
@@ -32,10 +35,17 @@ def main():
     logger.info("GPU: {}".format(args.gpu))
     logger.info("# Minibatch-size: {}".format(args.batchsize))
     logger.info("# epoch: {}".format(args.epoch))
+    logger.info("Calculate center loss: {}".format(args.centerloss))
 
     NUM_CLASSES = 10
 
-    model = LeNets(out_dim=NUM_CLASSES, lambda_ratio=0.5)
+    model = LeNets(
+        out_dim=NUM_CLASSES,
+        alpha=0.5,
+        lambda_ratio=0.5,
+        is_center_loss=args.centerloss,
+    )
+
     if args.gpu >= 0:
         chainer.cuda.get_device_from_id(args.gpu).use()
         model.to_gpu()
@@ -52,9 +62,9 @@ def main():
     # Load the MNIST dataset
     train, test = chainer.datasets.get_mnist(ndim=3)
 
-    train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
-    test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
-                                                 repeat=False, shuffle=False)
+    train_iter = chainer.iterators.MultiprocessIterator(train, args.batchsize, n_processes=2)
+    test_iter = chainer.iterators.MultiprocessIterator(test, args.batchsize, n_processes=2,
+                                                       repeat=False, shuffle=False)
 
     # Set up a trainer
     updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
@@ -90,8 +100,14 @@ def main():
     # Entries other than 'epoch' are reported by the Classifier link, called by
     # either the updater or the evaluator.
     trainer.extend(extensions.PrintReport(
-        ['epoch', 'main/loss', 'validation/main/loss',
+        ['epoch', 'iteration', 'main/loss', 'validation/main/loss',
          'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
+
+    # Visualize Deep Features
+    trainer.extend(VisualizeDeepFeature(
+        train[:10000],
+        NUM_CLASSES,
+        args.centerloss), trigger=(1, 'epoch'))
 
     # Print a progress bar to stdout
     trainer.extend(extensions.ProgressBar())
