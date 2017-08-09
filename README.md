@@ -4,7 +4,7 @@ Implementation of [Center Loss](https://link.springer.com/chapter/10.1007/978-3-
 
 ## Requirements
 
-- Python 3.5
+- Python 3.5.1
 - Chainer 2.0.0
 - CuPy 1.0.0 (if use GPU)
 - Matplotlib
