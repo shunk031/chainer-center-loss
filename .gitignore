@@ -1,3 +1,6 @@
 # gitignore for chainer-center-loss
 
 .python-version
+
+__pycache__/
+result/
