@@ -6,6 +6,8 @@ Implementation of [Center Loss](https://link.springer.com/chapter/10.1007/978-3-
 
 - Python 3.5
 - Chainer 2.0.0
+- CuPy 1.0.0 (if use GPU)
+- Matplotlib
 
 ## Reference
 
