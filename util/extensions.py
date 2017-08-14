@@ -38,7 +38,7 @@ class VisualizeDeepFeature(extension.Extension):
             labels = cuda.to_cpu(labels)
 
         for i in range(num_classes):
-            plt.scatter(deep_features[labels == i, 0], deep_features[labels == i, 1])
+            plt.scatter(deep_features[labels == i, 0], deep_features[labels == i, 1], s=2)
 
         if self.is_center_loss:
             centers = model.center_loss_function.centers
