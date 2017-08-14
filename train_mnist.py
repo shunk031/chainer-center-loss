@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import matplotlib
+matplotlib.use('Agg')
+
 import argparse
 
 import chainer
@@ -42,7 +45,7 @@ def main():
     model = LeNets(
         out_dim=NUM_CLASSES,
         alpha=0.5,
-        lambda_ratio=0.5,
+        lambda_ratio=1,
         is_center_loss=args.centerloss,
     )
 
