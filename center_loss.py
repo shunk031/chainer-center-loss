@@ -2,10 +2,8 @@
 
 import numpy
 
-import chainer.functions as F
 from chainer import cuda
 from chainer import function
-from chainer import initializers
 from chainer import link
 from chainer import variable
 from chainer.utils import type_check
@@ -33,9 +31,10 @@ class CenterLossFunction(function.Function):
     def forward(self, inputs):
         xp = cuda.get_array_module(*inputs)
         features, labels, centers = inputs
+        batch_size = features.shape[0]
 
         centers_batch = xp.take(centers, labels, axis=0)
-        y = xp.sum((features - centers_batch) ** 2) / 2
+        y = xp.sum((features - centers_batch) ** 2) / batch_size / 2
         y = xp.asarray(y, dtype=xp.float32)
 
         return y,
@@ -43,22 +42,22 @@ class CenterLossFunction(function.Function):
     def backward(self, inputs, gy):
         xp = cuda.get_array_module(*inputs)
         features, labels, centers = inputs
+        batch_size = features.shape[0]
 
         centers_batch = xp.take(centers, labels, axis=0)
 
         diff = features - centers_batch
-        gx0 = diff.astype(xp.float32)
+        gx0 = diff.astype(xp.float32) / batch_size
 
-        cj = []
+        d_cj = []
         for i in range(self.num_classes):
             c_j = centers[i]
             indices = xp.where(labels == i)
-            _cj = xp.sum(c_j - features[indices], axis=0) / (1 + indices[0].shape[0])
-            cj.append(_cj)
+            d_cj.append(xp.sum(c_j - features[indices], axis=0) / (1 + indices[0].shape[0]))
 
-        cj = self.alpha * xp.asarray(cj, dtype=xp.float32)
+        d_cj = self.alpha * xp.asarray(d_cj, dtype=xp.float32)
 
-        return gx0, None, cj
+        return gx0, None, d_cj
 
 
 class CenterLoss(link.Link):
