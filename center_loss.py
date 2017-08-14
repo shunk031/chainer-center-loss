@@ -4,6 +4,7 @@ import numpy
 
 from chainer import cuda
 from chainer import function
+from chainer import initializers
 from chainer import link
 from chainer import variable
 from chainer.utils import type_check
@@ -68,8 +69,9 @@ class CenterLoss(link.Link):
         self.alpha = alpha
         self.num_classes = num_classes
 
+        initial_centers = initializers.constant.Zero()
         with self.init_scope():
-            self.centers = variable.Parameter(0, (self.num_classes, 2))
+            self.centers = variable.Parameter(initial_centers, (self.num_classes, 2))
 
     def __call__(self, x, t, alpha, num_classes):
         return CenterLossFunction(self.alpha, self.num_classes)(x, t, self.centers)
