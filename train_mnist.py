@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import matplotlib
-matplotlib.use('Agg')
-
 import argparse
 
 import chainer
-import chainer.functions as F
 from chainer import training
 from chainer.training import extensions
 
