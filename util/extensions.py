@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import matplotlib
-matplotlib.use("Agg")
 
 import os
 
 from chainer import cuda
 from chainer.training import extension
 import matplotlib.pyplot as plt
+
+import matplotlib
+matplotlib.use("Agg")
 
 
 class VisualizeDeepFeature(extension.Extension):
