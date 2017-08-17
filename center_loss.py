@@ -35,7 +35,8 @@ class CenterLossFunction(function.Function):
         batch_size = features.shape[0]
 
         centers_batch = xp.take(centers, labels, axis=0)
-        y = xp.sum((features - centers_batch) ** 2) / batch_size / 2
+
+        y = xp.sum(xp.square(features - centers_batch)) / batch_size / 2
         y = xp.asarray(y, dtype=xp.float32)
 
         return y,
