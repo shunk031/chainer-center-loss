@@ -47,7 +47,10 @@ class VisualizeDeepFeature(extension.Extension):
                 centers = cuda.to_cpu(centers.data)
             plt.scatter(centers[:, 0], centers[:, 1], c='white')
 
-        plt.legend([str(i) for i in range(num_classes)], loc="upper right")
+        legends = [str(i) for i in range(num_classes)]
+        plt.legend(legends, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+        plt.subplots_adjust(right=0.85)
+
         plt.savefig(filename)
         plt.clf()
         plt.close()
