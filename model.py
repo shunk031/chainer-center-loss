@@ -9,10 +9,10 @@ from center_loss import CenterLoss
 
 class LeNets(chainer.Chain):
 
-    def __init__(self, out_dim, alpha, lambda_ratio=0.5, is_center_loss=True):
+    def __init__(self, out_dim, alpha_ratio, lambda_ratio=0.5, is_center_loss=True):
 
         self.out_dim = out_dim
-        self.alpha = alpha
+        self.alpha_ratio = alpha_ratio
         self.lambda_ratio = lambda_ratio
         self.is_center_loss = is_center_loss
 
@@ -28,7 +28,7 @@ class LeNets(chainer.Chain):
             self.fc2 = L.Linear(None, out_dim)
 
             if is_center_loss:
-                self.center_loss_function = CenterLoss(alpha, out_dim)
+                self.center_loss_function = CenterLoss(alpha_ratio, out_dim)
 
     def extract_feature(self, x):
 
@@ -45,7 +45,7 @@ class LeNets(chainer.Chain):
         h = self.extract_feature(x)
 
         if self.is_center_loss:
-            center_loss = self.center_loss_function(h, t, self.alpha, self.out_dim)
+            center_loss = self.center_loss_function(h, t, self.alpha_ratio, self.out_dim)
             chainer.report({"centerloss": center_loss}, self)
 
         h = F.relu(h)
