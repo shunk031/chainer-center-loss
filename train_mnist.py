@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import matplotlib
+matplotlib.use('Agg')
+
 import argparse
 
 import chainer
@@ -16,10 +19,14 @@ def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
     parser.add_argument('--batchsize', '-b', type=int, default=32,
                         help='Number of images in each mini-batch')
-    parser.add_argument('--epoch', '-e', type=int, default=20,
+    parser.add_argument('--epoch', '-e', type=int, default=30,
                         help='Number of sweeps over the dataset to train')
     parser.add_argument('--centerloss', '-c', action='store_true',
                         default=False, help='Use center loss')
+    parser.add_argument('--alpha_ratio', '-a', type=float, default=0.5,
+                        help='alpha ratio')
+    parser.add_argument('--lambda_ratio', '-l', type=float, default=0.1,
+                        help='lambda ratio')
     parser.add_argument('--frequency', '-f', type=int, default=-1,
                         help='Frequency of taking a snapshot')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
@@ -35,19 +42,18 @@ def main():
     logger.info("# Minibatch-size: {}".format(args.batchsize))
     logger.info("# epoch: {}".format(args.epoch))
     logger.info("Calculate center loss: {}".format(args.centerloss))
+    if args.centerloss:
+        logger.info('# alpha: {}'.format(args.alpha_ratio))
+        logger.info('# lambda: {}'.format(args.lambda_ratio))
 
     NUM_CLASSES = 10
 
     model = LeNets(
         out_dim=NUM_CLASSES,
-        alpha=0.5,
-        lambda_ratio=1,
+        alpha_ratio=args.alpha_ratio,
+        lambda_ratio=args.lambda_ratio,
         is_center_loss=args.centerloss,
     )
-
-    if args.gpu >= 0:
-        chainer.cuda.get_device_from_id(args.gpu).use()
-        model.to_gpu()
 
     if args.gpu >= 0:
         # Make a specified GPU current
@@ -61,8 +67,8 @@ def main():
     # Load the MNIST dataset
     train, test = chainer.datasets.get_mnist(ndim=3)
 
-    train_iter = chainer.iterators.MultiprocessIterator(train, args.batchsize, n_processes=2)
-    test_iter = chainer.iterators.MultiprocessIterator(test, args.batchsize, n_processes=2,
+    train_iter = chainer.iterators.MultiprocessIterator(train, args.batchsize, n_processes=4)
+    test_iter = chainer.iterators.MultiprocessIterator(test, args.batchsize, n_processes=4,
                                                        repeat=False, shuffle=False)
 
     # Set up a trainer
