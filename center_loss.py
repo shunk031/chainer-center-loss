@@ -74,5 +74,5 @@ class CenterLoss(link.Link):
         with self.init_scope():
             self.centers = variable.Parameter(initial_centers, (self.num_classes, 2))
 
-    def __call__(self, x, t, alpha, num_classes):
+    def __call__(self, x, t, alpha):
         return CenterLossFunction(self.alpha, self.num_classes)(x, t, self.centers)
