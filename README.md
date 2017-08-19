@@ -28,7 +28,11 @@ python train_mnist.py --batchsize 32 --epoch 20 --gpu 0 --centerloss
 * MNIST, Softmax Loss + Center Loss  
   The white dots denote 10 class centers of deep features.
 
-![Figure 1](https://raw.githubusercontent.com/shunk031/chainer-center-loss/master/img/visualize_deep_feature.png?token=AK_WjV_f9LG27YTtEBgEKmfJnRVdOBq5ks5ZnvN1wA%3D%3D)
+![Figure 1](https://raw.githubusercontent.com/shunk031/chainer-center-loss/master/img/visualize_deep_feature_with_center_loss.png)
+
+* MNIST, only Softmax Loss
+
+![Figure 2](https://raw.githubusercontent.com/shunk031/chainer-center-loss/master/img/visualize_deep_feature_without_center_loss.png)
 
 ## Reference
 
