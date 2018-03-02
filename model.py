@@ -45,7 +45,7 @@ class LeNets(chainer.Chain):
         h = self.extract_feature(x)
 
         if self.is_center_loss:
-            center_loss = self.center_loss_function(h, t, self.alpha_ratio)
+            center_loss = self.center_loss_function(h, t)
             chainer.report({"centerloss": center_loss}, self)
 
         h = F.relu(h)
